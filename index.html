@@ -240,8 +240,6 @@
 
     .room.view-bird .wall-mount-zone { display: none; }
 
-    .piece.plan svg { width: 100%; height: 100%; }
-
     /* Soft SF fog light from windows */
     .room::before {
       content: "";
@@ -525,6 +523,27 @@
       height: auto;
       overflow: visible;
       pointer-events: none;
+    }
+
+    .piece.plan svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .scale-chip {
+      position: absolute;
+      bottom: 0.65rem;
+      right: 0.75rem;
+      z-index: 35;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.85);
+      background: rgba(26, 36, 32, 0.55);
+      padding: 0.28rem 0.55rem;
+      border-radius: 999px;
+      pointer-events: none;
+      backdrop-filter: blur(8px);
     }
 
     .sidebar {
@@ -855,6 +874,7 @@
           </div>
 
           <div class="furniture-layer" id="furniture"></div>
+          <div class="scale-chip" id="scaleChip">16′ × 14′ room · real proportions</div>
         </div>
       </div>
 
@@ -870,7 +890,7 @@
 
         <section class="panel">
           <h2>Seating</h2>
-          <p class="hint">Drag pieces onto the floor. Scale matches across both views.</p>
+          <p class="hint">Sized to real inches in a 16′ × 14′ room — same scale in both views.</p>
           <div class="palette" id="palette"></div>
         </section>
 
@@ -975,17 +995,42 @@
           </defs>
           <rect x="62" y="80" width="16" height="4" rx="1" fill="#3a3a3a" opacity="0.5"/>
         </svg>`,
-      planSofa: `<svg viewBox="0 0 160 56" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="6" width="156" height="44" rx="4" fill="#5c6b62" stroke="#3d4842" stroke-width="2"/><rect x="2" y="6" width="156" height="10" fill="#4a5850"/><rect x="2" y="6" width="12" height="44" fill="#4a5850"/><rect x="146" y="6" width="12" height="44" fill="#4a5850"/></svg>`,
-      planLoveseat: `<svg viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="4" width="116" height="42" rx="4" fill="#5a6e78" stroke="#334048" stroke-width="2"/><rect x="2" y="4" width="116" height="9" fill="#45555c"/><rect x="2" y="4" width="10" height="42" fill="#45555c"/><rect x="108" y="4" width="10" height="42" fill="#45555c"/></svg>`,
-      planChair: `<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="48" height="48" rx="4" fill="#6b7d72" stroke="#546058" stroke-width="2"/><rect x="4" y="4" width="48" height="10" fill="#546058"/><rect x="4" y="4" width="9" height="48" fill="#546058"/><rect x="43" y="4" width="9" height="48" fill="#546058"/></svg>`,
-      planTvStand: `<svg viewBox="0 0 90 40" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="14" width="82" height="22" rx="2" fill="#8a6b3d" stroke="#6b5338" stroke-width="1.5"/><rect x="18" y="4" width="54" height="12" rx="1" fill="#1e2220"/></svg>`,
-      planTvWall: `<svg viewBox="0 0 80 22" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="76" height="18" rx="2" fill="#1e2220" stroke="#0a0c0b" stroke-width="1.5"/><text x="40" y="15" text-anchor="middle" fill="#7aa8b8" font-size="9" font-family="Manrope,sans-serif">TV</text></svg>`,
+      planSofa: `<svg viewBox="0 0 84 38" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="82" height="32" rx="2" fill="#5c6b62" stroke="#3d4842" stroke-width="1.2"/><rect x="1" y="4" width="82" height="7" fill="#4a5850"/><rect x="1" y="4" width="7" height="32" fill="#4a5850"/><rect x="76" y="4" width="7" height="32" fill="#4a5850"/></svg>`,
+      planLoveseat: `<svg viewBox="0 0 62 38" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="60" height="32" rx="2" fill="#5a6e78" stroke="#334048" stroke-width="1.2"/><rect x="1" y="4" width="60" height="7" fill="#45555c"/><rect x="1" y="4" width="6" height="32" fill="#45555c"/><rect x="55" y="4" width="6" height="32" fill="#45555c"/></svg>`,
+      planChair: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="34" height="34" rx="2" fill="#6b7d72" stroke="#546058" stroke-width="1.2"/><rect x="1" y="1" width="34" height="7" fill="#546058"/><rect x="1" y="1" width="6" height="34" fill="#546058"/><rect x="29" y="1" width="6" height="34" fill="#546058"/></svg>`,
+      planTvStand: `<svg viewBox="0 0 60 18" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="58" height="12" rx="1" fill="#8a6b3d" stroke="#6b5338" stroke-width="1"/><rect x="10" y="1" width="40" height="5" fill="#1e2220"/></svg>`,
+      planTvWall: `<svg viewBox="0 0 57 4" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="57" height="4" rx="0.5" fill="#1e2220"/></svg>`,
     };
 
+    /**
+     * Real-life scale (inches). Room ≈ 16′ × 14′ SF living room.
+     * Bird plan maps inches onto the inset floor; eye view uses width/height % of elevation.
+     */
+    const ROOM = { wIn: 192, dIn: 168, floorLeft: 7, floorTop: 10, floorW: 86, floorH: 81 };
+    const DIMS = {
+      sofa:     { wIn: 84, dIn: 38, hIn: 34, label: "Sofa · 84″" },
+      loveseat: { wIn: 62, dIn: 38, hIn: 34, label: "Loveseat · 62″" },
+      chair:    { wIn: 36, dIn: 36, hIn: 34, label: "Chair · 36″" },
+      tvStand:  { wIn: 60, dIn: 18, hIn: 48, label: "TV stand · 60″" }, // console + 55″ TV
+      tvWall:   { wIn: 57, dIn: 3,  hIn: 33, label: "Wall TV · 65″" },
+    };
+
+    function planPct(wIn, dIn) {
+      return {
+        w: (wIn / ROOM.wIn) * ROOM.floorW,
+        h: (dIn / ROOM.dIn) * ROOM.floorH,
+      };
+    }
+
+    function eyePct(wIn) {
+      // Width vs 16′ bay wall; SVG aspect keeps real height look
+      return { w: (wIn / ROOM.wIn) * 90 };
+    }
+
     const paletteItems = [
-      { id: "sofa", label: "Sofa", svg: SVG.sofa, eyeW: 28, planW: 32, planH: 11, y: 68 },
-      { id: "loveseat", label: "Loveseat", svg: SVG.loveseat, eyeW: 22, planW: 24, planH: 10, y: 70 },
-      { id: "chair", label: "Chair", svg: SVG.chair, eyeW: 14, planW: 12, planH: 12, y: 68 },
+      { id: "sofa", label: DIMS.sofa.label, svg: SVG.sofa, y: 66 },
+      { id: "loveseat", label: DIMS.loveseat.label, svg: SVG.loveseat, y: 68 },
+      { id: "chair", label: DIMS.chair.label, svg: SVG.chair, y: 67 },
     ];
 
     const state = {
@@ -1066,6 +1111,11 @@
     [el.viewEye, el.sideEye].forEach((b) => b.addEventListener("click", () => setView("eye")));
     [el.viewBird, el.sideBird].forEach((b) => b.addEventListener("click", () => setView("bird")));
 
+    function dimsFor(piece) {
+      if (piece.kind === "tv") return piece.mode === "wall" ? DIMS.tvWall : DIMS.tvStand;
+      return DIMS[piece.kind];
+    }
+
     function addPiece(kind) {
       if (kind === "tv" && hasTv()) {
         toast("One TV per design — drag it or switch Stand / Wall mount.");
@@ -1075,27 +1125,22 @@
       const meta = kind === "tv"
         ? {
             kind: "tv",
-            w: state.tvMode === "wall" ? 18 : 20,
-            x: state.tvMode === "wall" ? 41 : 40,
-            y: state.tvMode === "wall" ? 24 : 58,
+            x: state.tvMode === "wall" ? 36 : 34,
+            y: state.tvMode === "wall" ? 22 : 56,
             mode: state.tvMode,
           }
         : (() => {
             const item = paletteItems.find((p) => p.id === kind);
-            const jitter = (Math.random() - 0.5) * 12;
+            const jitter = (Math.random() - 0.5) * 8;
             return {
               kind,
-              w: item.eyeW,
-              x: 36 + jitter,
-              y: item.y + (Math.random() - 0.5) * 4,
+              x: 30 + jitter,
+              y: item.y + (Math.random() - 0.5) * 3,
               mode: null,
             };
           })();
 
-      const piece = {
-        id: state.nextId++,
-        ...meta,
-      };
+      const piece = { id: state.nextId++, ...meta };
       state.pieces.push(piece);
       state.selectedId = piece.id;
       render();
@@ -1117,16 +1162,32 @@
     }
 
     function layoutSize(piece) {
+      const d = dimsFor(piece);
       if (state.view === "bird") {
-        if (piece.kind === "tv") {
-          return piece.mode === "wall"
-            ? { w: 16, h: 5, y: 12 }
-            : { w: 18, h: 8, y: null };
-        }
-        const item = paletteItems.find((p) => p.id === piece.kind);
-        return { w: item.planW, h: item.planH, y: null };
+        const p = planPct(d.wIn, d.dIn);
+        return {
+          w: p.w,
+          h: p.h,
+          // Wall TV sits on the bay wall strip
+          wallY: piece.kind === "tv" && piece.mode === "wall" ? ROOM.floorTop + 1.5 : null,
+        };
       }
-      return { w: piece.w, h: null, y: null };
+      const e = eyePct(d.wIn);
+      return { w: e.w, h: null, wallY: null };
+    }
+
+    function screenTop(piece, size) {
+      if (state.view === "bird") {
+        if (size.wallY != null) return size.wallY;
+        // Map eye floor Y (52–78) into plan floor band
+        const t = (piece.y - 52) / (78 - 52);
+        return ROOM.floorTop + 14 + t * (ROOM.floorH - 18);
+      }
+      // Eye level: bottom-align furniture on floor using height
+      if (piece.kind === "tv" && piece.mode === "wall") {
+        return Math.max(16, Math.min(34, piece.y));
+      }
+      return piece.y;
     }
 
     function render() {
@@ -1135,17 +1196,14 @@
 
       ordered.forEach((piece) => {
         const size = layoutSize(piece);
+        const top = screenTop(piece, size);
         const div = document.createElement("div");
         div.className = "piece" + (piece.id === state.selectedId ? " selected" : "") + (state.view === "bird" ? " plan" : "");
         div.dataset.id = piece.id;
         div.style.left = piece.x + "%";
-        const top = state.view === "bird" && piece.kind === "tv" && piece.mode === "wall"
-          ? size.y
-          : (state.view === "bird" ? Math.max(24, Math.min(78, 20 + (piece.y - 50) * 1.1)) : piece.y);
         div.style.top = top + "%";
         div.style.width = size.w + "%";
-        if (size.h) div.style.height = size.h + "%";
-        else div.style.height = "";
+        div.style.height = size.h != null ? size.h + "%" : "auto";
         div.style.zIndex = String(10 + Math.round(piece.y));
         div.innerHTML = pieceSvg(piece);
         div.addEventListener("pointerdown", onPointerDown);
@@ -1153,24 +1211,31 @@
       });
 
       el.wallZone.classList.toggle("active", state.tvMode === "wall" && state.view === "eye");
+      const chip = document.getElementById("scaleChip");
+      if (chip) {
+        chip.textContent = state.view === "bird"
+          ? "Plan · 16′ × 14′ · footprints to scale"
+          : "Eye level · 16′ room · sofa 84″ · chair 36″ · TV 60″/65″";
+      }
       buildPalette();
       updateChecks();
     }
 
     function applyExpertDesign() {
       const wall = state.tvMode === "wall";
+      // Conversation group: sofa opposite TV, chairs to the side — real clearances
       state.pieces = [
-        { id: state.nextId++, kind: "sofa", w: 28, x: 14, y: 66, mode: null },
-        { id: state.nextId++, kind: "chair", w: 14, x: 72, y: 68, mode: null },
-        { id: state.nextId++, kind: "loveseat", w: 22, x: 48, y: 72, mode: null },
+        { id: state.nextId++, kind: "sofa", x: 10, y: 66, mode: null },
+        { id: state.nextId++, kind: "chair", x: 72, y: 67, mode: null },
+        { id: state.nextId++, kind: "loveseat", x: 48, y: 72, mode: null },
         wall
-          ? { id: state.nextId++, kind: "tv", w: 18, x: 41, y: 24, mode: "wall" }
-          : { id: state.nextId++, kind: "tv", w: 20, x: 38, y: 58, mode: "stand" },
+          ? { id: state.nextId++, kind: "tv", x: 36, y: 22, mode: "wall" }
+          : { id: state.nextId++, kind: "tv", x: 34, y: 56, mode: "stand" },
       ];
       state.selectedId = null;
       el.scoreBanner.classList.remove("show");
       render();
-      toast("Expert Design applied — conversation area facing the bay wall TV.");
+      toast("Expert Design applied — sofa 84″, chairs 36″, TV scaled to the 16′ room.");
     }
 
     function updateChecks() {
@@ -1189,24 +1254,26 @@
     }
 
     function clampPiece(piece, x, y) {
-      const maxX = 100 - piece.w;
-      piece.x = Math.max(2, Math.min(maxX, x));
+      const size = layoutSize(piece);
+      piece.x = Math.max(ROOM.floorLeft, Math.min(ROOM.floorLeft + ROOM.floorW - size.w, x));
 
       if (state.view === "bird") {
-        // Map plan screen Y back into eye-level floor Y storage
         if (piece.kind === "tv" && piece.mode === "wall") {
-          piece.y = Math.max(14, Math.min(30, y));
-        } else {
-          const mapped = 50 + (y - 20) / 1.1;
-          piece.y = Math.max(52, Math.min(78, mapped));
+          piece.y = 22;
+          return;
         }
+        const minTop = ROOM.floorTop + 14;
+        const maxTop = ROOM.floorTop + ROOM.floorH - size.h - 2;
+        const clampedTop = Math.max(minTop, Math.min(maxTop, y));
+        const t = (clampedTop - minTop) / Math.max(1, maxTop - minTop);
+        piece.y = 52 + t * (78 - 52);
         return;
       }
 
       if (piece.kind === "tv" && piece.mode === "wall") {
-        piece.y = Math.max(14, Math.min(38, y));
+        piece.y = Math.max(16, Math.min(34, y));
       } else {
-        piece.y = Math.max(52, Math.min(78, y));
+        piece.y = Math.max(54, Math.min(76, y));
       }
     }
 
@@ -1219,9 +1286,7 @@
       state.selectedId = id;
       const rect = el.room.getBoundingClientRect();
       const size = layoutSize(piece);
-      const top = state.view === "bird" && piece.kind === "tv" && piece.mode === "wall"
-        ? size.y
-        : (state.view === "bird" ? Math.max(24, Math.min(78, 20 + (piece.y - 50) * 1.1)) : piece.y);
+      const top = screenTop(piece, size);
       state.drag = {
         id,
         ox: e.clientX - (piece.x / 100) * rect.width,
@@ -1248,12 +1313,11 @@
       const node = el.furniture.querySelector(`[data-id="${piece.id}"]`);
       if (node) {
         const size = layoutSize(piece);
-        const top = state.view === "bird" && piece.kind === "tv" && piece.mode === "wall"
-          ? size.y
-          : (state.view === "bird" ? Math.max(24, Math.min(78, 20 + (piece.y - 50) * 1.1)) : piece.y);
+        const top = screenTop(piece, size);
         node.style.left = piece.x + "%";
         node.style.top = top + "%";
         node.style.width = size.w + "%";
+        node.style.height = size.h != null ? size.h + "%" : "auto";
         node.style.zIndex = String(30);
       }
     });
@@ -1282,13 +1346,12 @@
       const tv = state.pieces.find((p) => p.kind === "tv");
       if (tv) {
         tv.mode = mode;
-        tv.w = mode === "wall" ? 18 : 20;
         if (mode === "wall") {
-          tv.x = 41;
-          tv.y = 24;
+          tv.x = 36;
+          tv.y = 22;
         } else {
-          tv.x = 40;
-          tv.y = 58;
+          tv.x = 34;
+          tv.y = 56;
         }
       }
       render();
@@ -1350,11 +1413,11 @@
       }
     });
 
-    // Starter layout
+    // Starter layout — real proportions in a 16′ × 14′ room
     state.pieces.push(
-      { id: state.nextId++, kind: "sofa", w: 28, x: 18, y: 66, mode: null },
-      { id: state.nextId++, kind: "chair", w: 14, x: 68, y: 70, mode: null },
-      { id: state.nextId++, kind: "tv", w: 20, x: 40, y: 58, mode: "stand" }
+      { id: state.nextId++, kind: "sofa", x: 12, y: 66, mode: null },
+      { id: state.nextId++, kind: "chair", x: 70, y: 68, mode: null },
+      { id: state.nextId++, kind: "tv", x: 34, y: 56, mode: "stand" }
     );
     render();
   </script>
